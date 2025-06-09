@@ -22,13 +22,14 @@ type UserType = {
 };
 
 export default function HeaderPublic() {
-    const [user, setUser] = useState<UserType>();
+    const [user] = useState<UserType>();
     const [menuVisible, setMenuVisible] = useState(false);
-    const {status, active, inactive} = useGlobalLoadingStore();
+    const {active, inactive} = useGlobalLoadingStore();
     const [authLoading, setAuthLoading] = useState<boolean>(false);
     const toast = useToast();
 
-    let menu_items: MenuItem[] = [
+    // 'let' ордуна 'const' колдонуңуз
+    const menu_items: MenuItem[] = [
         {label: 'Главная', icon: 'pi pi-home', url: "/"},
         {label: 'Тесты', icon: 'pi pi-check', url: '/test'},
         {label: 'Категории', icon: 'pi pi-list', url: '/category'},
@@ -45,32 +46,34 @@ export default function HeaderPublic() {
             const res = await getAuthCode();
 
             if (res.success && res.url) {
-                toast.showSuccess("Ийгиликтүү код алынды!"); // <--- Эми toast аныкталган болушу керек
+                toast.showSuccess("Ийгиликтүү код алынды!");
                 window.location.href = res.url;
             } else {
                 console.error("Ошибка авторизации:", res.error || "Неизвестная ошибка");
                 inactive();
-                toast.showError(res.error || "Авторизацияда белгисиз ката кетти."); // Ката билдирүүсү
-                // Можно добавить уведомление для пользователя
-                // dispatch(updNotification({ error: "Ошибка авторизации", success: "" }));
+                toast.showError( "Авторизацияда белгисиз ката кетти.");
             }
         } catch (err) {
             console.error("Непредвиденная ошибка в sentAndGetAuthCode:", err);
             inactive();
-            toast.showError("Авторизация API'сине туташууда ката кетти."); // API чакыруу катасы
+            toast.showError("Авторизация API'сине туташууда ката кетти.");
 
         } finally {
             setAuthLoading(false);
         }
-        if (res.success && res.url) {
-            window.location.href = res.url;
-        } else {
-            console.error("Ошибка авторизации:", res.error || "Неизвестная ошибка");
-            toast.showError("Авторизация API'сине туташууда ката кетти."); // API чакыруу катасы
-            inactive();
-            // Можно добавить уведомление для пользователя
-            // dispatch(updNotification({ error: "Ошибка авторизации", success: "" }));
-        }
+        // Бул жердеги sentAndGetAuthCode функциясынын аягындагы логиканы карап чыгуу керек.
+        // sentAndGetAuthCode функциясынын ичиндеги try/catch блогу бүткөндөн кийин,
+        // res өзгөрмөсү бул жерде аныкталбаган болот. Бул жердеги логиканы алып салуу керек окшойт.
+        // Эгерде сиз бул логиканы сактагыңыз келсе, res өзгөрмөсүн try/catch блогунан тышкары аныктап,
+        // ага маани беришиңиз керек. Бирок, азыркы структурада ал жеткиликтүү эмес.
+        // Жогорудагы if/else блогу буга чейин эле иштеп жатат.
+        // if (res.success && res.url) { // <-- res бул жерде аныкталган эмес
+        //     window.location.href = res.url;
+        // } else {
+        //     console.error("Ошибка авторизации:", res.error || "Неизвестная ошибка");
+        //     toast.showError("Авторизация API'сине туташууда ката кетти.");
+        //     inactive();
+        // }
     }
 
 

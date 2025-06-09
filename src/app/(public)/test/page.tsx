@@ -1,8 +1,9 @@
 "use client";
 import {useUserStore} from "@/app/store/useUserStore";
 
-export default function testPage() {
-    const {user, clearUser, setUser, isLoadingUser} = useUserStore();
+// Функциянын атын 'testPage' ордуна 'TestPage' кылып өзгөртүңүз
+export default function TestPage() {
+    const {user} = useUserStore();
 
     return (
         <div>

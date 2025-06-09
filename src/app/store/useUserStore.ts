@@ -15,7 +15,8 @@ interface UserStore {
     isLoadingUser: boolean; // Колдонуучу маалыматы жүктөлүп жатканын көрсөтөт
 }
 
-export const useUserStore = create<UserStore>((set, get) => ({
+// 'get' параметрин алып салыңыз, анткени ал колдонулбай жатат
+export const useUserStore = create<UserStore>((set) => ({ // get параметри алынып салынды
     user: null,
     isLoadingUser: false,
     setUser: (user) => set({user}),
