@@ -3,7 +3,8 @@
 
 import {useEffect} from 'react';
 import {useUserStore} from '@/app/store/useUserStore';
-import {api} from '@/lib/api'; // Сиздин Axios инстанцияңыз
+import {api} from '@/lib/api';
+import {useGlobalLoadingStore} from "@/app/store/useGlobalLoadingStore"; // Сиздин Axios инстанцияңыз
 
 interface AuthStatusProviderProps {
     children: React.ReactNode;
@@ -11,11 +12,14 @@ interface AuthStatusProviderProps {
 
 export function AuthStatusProvider({children}: AuthStatusProviderProps) {
     const {isLoadingUser, user, setUser, clearUser} = useUserStore();
+    const {active, inactive} = useGlobalLoadingStore();
 
     useEffect(() => {
         async function checkAuthAndFetchUser() {
             // Эгер колдонуучу маалыматы жүктөлүп жатса, кайтаруу
             if (isLoadingUser) return;
+            active();
+
 
             // Колдонуучунун статусун текшерүү үчүн сервердик API'га чалуу
             // (Бул API httpOnly кукилерди окуй алат)
@@ -44,6 +48,8 @@ export function AuthStatusProvider({children}: AuthStatusProviderProps) {
                 if (user) {
                     clearUser(); // Ката болсо да user'ди тазалоо
                 }
+            } finally {
+                inactive();
             }
         }
 
@@ -54,7 +60,7 @@ export function AuthStatusProvider({children}: AuthStatusProviderProps) {
         // Dependency array'ден getCookie'ни алып салуу керек, анткени ал мындан ары колдонулбайт.
         // user, isLoadingUser, setUser, clearUser функцияларын dependency'ге кошууну унутпаңыз
         // (алар useUserStore'дон келет, ошондуктан алар туруктуу).
-    }, [user, isLoadingUser, setUser, clearUser]); // fetchUser'ды да кошо алабыз, бирок ал да туруктуу.
+    }, [user, isLoadingUser, setUser, clearUser, active, inactive]); // fetchUser'ды да кошо алабыз, бирок ал да туруктуу.
 
     // Жүктөө абалын же колдонуучунун маалыматын күтүп жатканда UI көрсөтүү
     if (isLoadingUser) {

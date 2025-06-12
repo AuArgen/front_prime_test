@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import {useState} from "react";
+import {useRef, useState} from "react";
 import {Avatar} from "primereact/avatar";
 import {Button} from "primereact/button";
 import {IconField} from "primereact/iconfield";
@@ -12,21 +12,18 @@ import {MenuItem} from "primereact/menuitem";
 import {useGlobalLoadingStore} from "@/app/store/useGlobalLoadingStore";
 import {getAuthCode} from "@/api/auth";
 import {useToast} from "@/components/provider/ToastProvider";
+import {useUserStore} from "@/app/store/useUserStore";
+import {OverlayPanel} from "primereact/overlaypanel";
+import {api} from "@/lib/api";
 
-type UserType = {
-    id: string;
-    name: string;
-    email: string;
-    lastname: string;
-    father_name: string;
-};
 
 export default function HeaderPublic() {
-    const [user] = useState<UserType>();
+    const {user} = useUserStore();
     const [menuVisible, setMenuVisible] = useState(false);
     const {active, inactive} = useGlobalLoadingStore();
     const [authLoading, setAuthLoading] = useState<boolean>(false);
     const toast = useToast();
+    const ShowProfile = useRef<OverlayPanel | null>(null);
 
     // 'let' ордуна 'const' колдонуңуз
     const menu_items: MenuItem[] = [
@@ -36,6 +33,20 @@ export default function HeaderPublic() {
         {label: 'О нас', icon: 'pi pi-users', url: '/about'},
         {label: 'Контакт', icon: 'pi pi-forward', url: '/contact'},
     ];
+
+    async function Logout() {
+        try {
+            active();
+            api.post("/auth/logout", active);
+            toast.showSuccess('Ийгиликтүү чыгып алдыңыз')
+        } catch (e) {
+            console.error(e)
+            toast.showError('Каттачылык болуп жатат!');
+        } finally {
+            inactive();
+            window.location.href = "/";
+        }
+    }
 
 
     async function sentAndGetAuthCode() {
@@ -51,7 +62,7 @@ export default function HeaderPublic() {
             } else {
                 console.error("Ошибка авторизации:", res.error || "Неизвестная ошибка");
                 inactive();
-                toast.showError( "Авторизацияда белгисиз ката кетти.");
+                toast.showError("Авторизацияда белгисиз ката кетти.");
             }
         } catch (err) {
             console.error("Непредвиденная ошибка в sentAndGetAuthCode:", err);
@@ -106,7 +117,18 @@ export default function HeaderPublic() {
                     </div>
                     <div>
                         {user && user.id ? (
-                            <Avatar label="U" style={{backgroundColor: '#9c27b0', color: '#ffffff'}} shape="circle"/>
+                            <div>
+                                <Avatar label={user.email[0].toUpperCase()}
+                                        style={{backgroundColor: '#9c27b0', color: '#ffffff'}}
+                                        onClick={(e) => {
+                                            if (ShowProfile.current) ShowProfile.current.toggle(e);
+                                        }}
+                                        shape="circle"/>
+                                <OverlayPanel ref={ShowProfile}>
+                                    <Button icon='pi pi-sign-out' label='Выйти' className="py-2"
+                                            onClick={Logout}></Button>
+                                </OverlayPanel>
+                            </div>
                         ) : (
                             <Button onClick={sentAndGetAuthCode} label="Войти" icon="pi pi-user" loading={authLoading}/>
                         )}

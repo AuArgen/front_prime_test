@@ -1,4 +1,4 @@
-// src/app/api/auth/login/route.ts (мисалы, ушундай жол)
+// src/app/api/auth/login/route.js (мисалы, ушундай жол)
 
 import {NextRequest, NextResponse} from "next/server";
 import {api} from "@/lib/api"; // api'ңиз туура импорттолгондугун текшериңиз
